@@ -368,8 +368,7 @@ void do_blank()
     LATCbits.LATC0 = 1;
     
     if (ok) {
-        s = "OK";
-        uart_puts(s);
+        uart_puts("OK");
     }  
 }
 
