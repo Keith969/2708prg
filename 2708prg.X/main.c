@@ -22,6 +22,10 @@
 #define INPUT  0xFF
 #define OUTPUT 0x00
 
+#define DEV_2716 0
+#define DEV_2732 1
+#define DEV_2532 2
+#define DEV_2708 3
 // cmds
 #define CMD_READ '1'               // Read from the EPROM
 #define CMD_WRTE '2'               // Program the EPROM
@@ -46,6 +50,8 @@ static int16_t head = 0;           // head of the queue
 static int16_t tail = ENDQUEUE;    // tail of the  queue
 static bool    cmd_active = false; // Are we in a cmd?
 static bool    queue_empty = false;// wait if queue empty
+static int8_t  devType = 0;        // 0 = 2716, 3 = 2708
+static int16_t bytes = 0;          // size of program data
 
 // ****************************************************************************
 // setCTS()
@@ -218,7 +224,7 @@ void ports_init(void)
     TRISB = OUTPUT;
     
     // Port C is control and uart bits
-    // (uart uses bits 6,7). Bits 4/5 spare.
+    // (uart uses bits 6,7)
     TRISCbits.TRISC0 = 0; // bit 0 is CE_ chip enable
     TRISCbits.TRISC1 = 0; // bit 1 is WE_ write enable
     TRISCbits.TRISC2 = 0; // bit 2 is PRG_
@@ -240,8 +246,30 @@ void ports_init(void)
     // Port D is data D0-A7, either input or output.
     TRISD = INPUT;
     
-    // Port E not used
+    // Port E used for selecting 2708 / TMS2716
     TRISE = 0;
+    LATEbits.LATE0 = 0; // note this drives a 7406
+    LATEbits.LATE1 = 0;
+    LATEbits.LATE2 = 0;
+}
+
+// ****************************************************************************
+// Set the device type and the RE0 bit
+//
+void
+do_type()
+{
+    devType = (int8_t) pop() - (int8_t) '0';
+            
+    if (devType == DEV_2716) {
+        bytes = 2048;
+        LATEbits.LATE0 = 1;
+    } else {
+        bytes = 1024;
+        LATEbits.LATE0 = 0;
+    }
+    
+    uart_puts("OK");
 }
 
 // ****************************************************************************
@@ -279,10 +307,10 @@ void __interrupt() isr(void)
 //
 void setup_address(uint16_t addr)
 {                
-    // Set the address lines. B0-7 is A0-7, A0-1 is A8-9
+    // Set the address lines. B0-7 is A0-7, A0-2 is A8-10
     uint8_t hi = addr >> 8;
     LATB       = addr & 0x00ff;
-    LATA       = hi   & 0x03;
+    LATA       = hi   & 0x0007;
         
     // wait, Tcss
     __delay_us(10);
@@ -339,7 +367,7 @@ void do_blank()
     LATCbits.LATC1 = 1; // set WE_ false (read)
     LATCbits.LATC2 = 1; // set PRG_ false
         
-    for (addr = 0; addr < 1024; ++addr) {
+    for (addr = 0; addr < bytes; ++addr) {
         if (cmd_active == false) {
             uart_puts("Check aborted\n");
             return;
@@ -385,7 +413,7 @@ void do_read()
     LATCbits.LATC1 = 1; // set WE_ false (read)
     LATCbits.LATC2 = 1; // set PRG_ false
         
-    for (addr = 0; addr < 1024; ++addr) {
+    for (addr = 0; addr < bytes; ++addr) {
         if (cmd_active == false) {
             uart_puts("Read abortted\n");
             return;
@@ -454,7 +482,7 @@ void do_write()
     LATCbits.LATC1 = 0; // set WE_ true
     LATCbits.LATC2 = 1; // set PRG_ false
     
-    for (addr = 0; addr < 1024; addr++) {
+    for (addr = 0; addr < bytes; addr++) {
         if (cmd_active == false) {
             uart_puts("Write aborted\n");
             return;
@@ -527,8 +555,16 @@ void main(void) {
             else if (cmd == CMD_INIT) {
                 uart_puts("Already init");
             }
+            else if (cmd == CMD_TYPE) {
+                do_type();
+            }
             else if (cmd == CMD_IDEN) {
-                uart_puts("2708");
+                if (devType == 3)
+                    uart_puts("2708");
+                else if (devType == 0)
+                    uart_puts("2716");
+                else
+                    uart_puts("NONE");
             }
 			else if (cmd == CMD_RSET) {
 			    asm("RESET");
