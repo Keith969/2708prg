@@ -26,6 +26,7 @@
 #define DEV_2732 1
 #define DEV_2532 2
 #define DEV_2708 3
+#define DEV_T2716 4
 // cmds
 #define CMD_READ '1'               // Read from the EPROM
 #define CMD_WRTE '2'               // Program the EPROM
@@ -261,7 +262,7 @@ do_type()
 {
     devType = (int8_t) pop() - (int8_t) '0';
             
-    if (devType == DEV_2716) {
+    if (devType == DEV_T2716) {
         bytes = 2048;
         LATEbits.LATE0 = 1;
     } else {
