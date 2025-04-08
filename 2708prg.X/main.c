@@ -484,7 +484,7 @@ void do_write()
     LATCbits.LATC2 = 1; // set PRG_ false
     
     // wait 5ms to get some bytes in the queue
-    __delay_ms(5)
+    __delay_ms(5);
 
     for (addr = 0; addr < bytes; addr++) {
         if (cmd_active == false) {
