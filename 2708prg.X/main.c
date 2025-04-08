@@ -483,6 +483,9 @@ void do_write()
     LATCbits.LATC1 = 0; // set WE_ true
     LATCbits.LATC2 = 1; // set PRG_ false
     
+    // wait 5ms to get some bytes in the queue
+    __delay_ms(5)
+
     for (addr = 0; addr < bytes; addr++) {
         if (cmd_active == false) {
             uart_puts("Write aborted\n");
@@ -531,7 +534,7 @@ void main(void) {
     INTCONbits.GIE = 1;
         
     // Loop while waiting for commands
-	// We flash a green LED so we know we are listening...
+    // We flash a green LED so we know we are listening...
     while (true) { 
         if (cmd_active) {
             // Turn on orange LED to show we're active
@@ -567,9 +570,9 @@ void main(void) {
                 else
                     uart_puts("NONE");
             }
-			else if (cmd == CMD_RSET) {
-			    asm("RESET");
-			}
+            else if (cmd == CMD_RSET) {
+                asm("RESET");
+            }
             
             // Clear the cmd
             clear();
