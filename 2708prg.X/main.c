@@ -265,11 +265,16 @@ do_type()
     if (devType == DEV_T2716) {
         bytes = 2048;
         LATEbits.LATE0 = 1;
-    } else {
+    } 
+	else i
+	if (devType == DEV_2708) {
         bytes = 1024;
         LATEbits.LATE0 = 0;
     }
-    
+	else {
+    	uart_puts("bad type");
+		return;
+	}
     uart_puts("OK");
 }
 
@@ -568,7 +573,7 @@ void main(void) {
                 else if (devType == 0)
                     uart_puts("2716");
                 else
-                    uart_puts("NONE");
+                    uart_puts("ERROR");
             }
             else if (cmd == CMD_RSET) {
                 asm("RESET");
