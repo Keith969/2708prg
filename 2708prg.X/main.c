@@ -266,7 +266,7 @@ do_type()
         bytes = 2048;
         LATEbits.LATE0 = 1;
     } 
-	else i
+	else
 	if (devType == DEV_2708) {
         bytes = 1024;
         LATEbits.LATE0 = 0;
