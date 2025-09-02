@@ -27,6 +27,9 @@
 #define DEV_2532 2
 #define DEV_2708 3
 #define DEV_T2716 4
+#define DEV_8755 5
+#define DEV_8748 6
+
 // cmds
 #define CMD_READ '1'               // Read from the EPROM
 #define CMD_WRTE '2'               // Program the EPROM
