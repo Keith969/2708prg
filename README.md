@@ -1,5 +1,6 @@
 # eprom_prg
-A programmer for EPROMs.
+A programmer for EPROMs. This version handles 2708 and TI 2716 (not the same as
+Intel 2716) types.
 
 This comes in 3 parts:
 1) The PC (or Mac, Linux) program that reads/writes HEX format files
