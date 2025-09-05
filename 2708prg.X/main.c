@@ -491,7 +491,14 @@ void do_write()
     // wait 5ms to get some bytes in the queue
     __delay_ms(5);
 
-    for (addr = 0; addr < bytes; addr++) {
+    // Get the size of the data
+    c = pop();
+    uint8_t hi = charToHexDigit(c);
+    c = pop();
+    uint8_t lo = charToHexDigit(c);
+    uint16_t size = hi*16+lo;
+    
+    for (addr = 0; addr < size; addr++) {
         if (cmd_active == false) {
             uart_puts("Write aborted\n");
             return;
